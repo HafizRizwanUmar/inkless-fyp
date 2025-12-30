@@ -15,11 +15,31 @@ const CreateClass = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // TODO: Implement class creation logic
-        console.log("Class Created:", formData);
-        navigate('/teacher/dashboard');
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch('http://localhost:5000/api/classes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token
+                },
+                body: JSON.stringify({
+                    title: formData.name,
+                    section: formData.section,
+                    subject: formData.subject,
+                    room: formData.room
+                })
+            });
+
+            if (!res.ok) throw new Error('Failed to create class');
+
+            navigate('/teacher/dashboard');
+        } catch (err) {
+            console.error(err);
+            alert(err.message); // Simple error handling for now
+        }
     };
 
     return (

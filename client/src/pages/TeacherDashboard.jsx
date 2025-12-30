@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, MoreVertical, FolderOpen, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -8,7 +8,6 @@ const ClassCard = ({ title, section, students, theme, link }) => (
         whileHover={{ y: -5, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)" }}
         className="group relative flex flex-col bg-surface border border-border rounded-xl overflow-hidden transition-all duration-300 w-full"
     >
-        {/* Card Header (Banner) */}
         <div className={`h-24 ${theme} relative p-4 flex flex-col justify-between`}>
             <div className="flex justify-between items-start text-white">
                 <Link to={link || "/class-details"} className="hover:underline decoration-1 underline-offset-2">
@@ -40,19 +39,35 @@ const ClassCard = ({ title, section, students, theme, link }) => (
 );
 
 const TeacherDashboard = () => {
-    // Mock Data for Classes
-    const teachingClasses = [
-        { id: 1, title: 'Introduction to AI', section: 'CS101 • Fall 2025', students: 42, theme: 'bg-gradient-to-r from-blue-600 to-indigo-600' },
-        { id: 2, title: 'Data Structures', section: 'CS202 • Fall 2025', students: 38, theme: 'bg-gradient-to-r from-emerald-600 to-teal-600' },
-        { id: 3, title: 'Web Development', section: 'CS305 • Spring 2026', students: 55, theme: 'bg-gradient-to-r from-orange-500 to-pink-600' },
-        { id: 4, title: 'Senior Project', section: 'CS400 • Sem A', students: 12, theme: 'bg-slate-700' },
-    ];
+    const [classes, setClasses] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('http://localhost:5000/api/classes', {
+                    headers: { 'x-auth-token': token }
+                });
+                const data = await res.json();
+                setClasses(data);
+            } catch (err) {
+                console.error("Error fetching classes:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchClasses();
+    }, []);
+
+    if (loading) return <div className="p-6 text-center text-secondary-foreground">Loading classes...</div>;
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-semibold text-white">Teaching</h1>
+                    <h1 className="text-2xl font-semibold text-foreground">Teaching</h1>
                     <p className="text-sm text-secondary-foreground">Manage your active courses.</p>
                 </div>
                 <div className="flex space-x-3">
@@ -65,16 +80,22 @@ const TeacherDashboard = () => {
 
             {/* Grid of Class Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {teachingClasses.map((cls) => (
-                    <ClassCard
-                        key={cls.id}
-                        title={cls.title}
-                        section={cls.section}
-                        students={cls.students}
-                        theme={cls.theme}
-                        link={`/class-details`}
-                    />
-                ))}
+                {classes.length === 0 ? (
+                    <div className="col-span-full text-center py-12 bg-surface rounded-xl border border-border">
+                        <p className="text-secondary-foreground">No classes found. Create one to get started!</p>
+                    </div>
+                ) : (
+                    classes.map((cls) => (
+                        <ClassCard
+                            key={cls._id}
+                            title={cls.title}
+                            section={cls.section}
+                            students={cls.students?.length || 0}
+                            theme={cls.theme}
+                            link={`/class-details`}
+                        />
+                    ))
+                )}
             </div>
         </div>
     );
