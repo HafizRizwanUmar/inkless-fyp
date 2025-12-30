@@ -19,6 +19,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Notifications from './pages/Notifications';
 // Module A & B imports already present...
 import CreateClass from './pages/CreateClass';
+import JoinClass from './pages/JoinClass';
 import ClassDetails from './pages/ClassDetails';
 import StudentList from './pages/StudentList';
 import StudentManagement from './pages/StudentManagement';
@@ -79,6 +80,7 @@ function App() {
 
           {/* Module C: Class Management */}
           <Route path="/create-class" element={<CreateClass />} />
+          <Route path="/join-class" element={<JoinClass />} />
           <Route path="/class-details" element={<ClassDetails />} />
           <Route path="/student-list" element={<StudentList />} />
           <Route path="/student-management" element={<StudentManagement />} />

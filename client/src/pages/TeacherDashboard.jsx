@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus, MoreVertical, FolderOpen, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const ClassCard = ({ title, section, students, theme, link }) => (
+const ClassCard = ({ title, section, students, theme, link, code }) => (
     <motion.div
         whileHover={{ y: -5, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)" }}
         className="group relative flex flex-col bg-surface border border-border rounded-xl overflow-hidden transition-all duration-300 w-full"
@@ -22,8 +22,12 @@ const ClassCard = ({ title, section, students, theme, link }) => (
 
         {/* Card Body */}
         <div className="flex-1 p-4 relative min-h-[100px]">
-            {/* Placeholder for future content (e.g. recent assignments snippet) */}
-            <p className="text-sm text-secondary-foreground">{students} Students</p>
+            <p className="text-sm text-secondary-foreground mb-1">{students} Students</p>
+            {code && (
+                <div className="text-xs font-mono bg-secondary/50 p-2 rounded inline-block text-primary">
+                    Code: {code}
+                </div>
+            )}
         </div>
 
         {/* Card Footer */}
@@ -93,6 +97,7 @@ const TeacherDashboard = () => {
                             students={cls.students?.length || 0}
                             theme={cls.theme}
                             link={`/class-details`}
+                            code={cls.code}
                         />
                     ))
                 )}

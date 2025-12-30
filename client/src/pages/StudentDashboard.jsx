@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { User, FolderOpen, TrendingUp } from 'lucide-react';
+import { User, FolderOpen, TrendingUp, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const StudentClassCard = ({ title, section, teacher, theme, link }) => (
@@ -45,36 +45,63 @@ const StudentClassCard = ({ title, section, teacher, theme, link }) => (
 );
 
 const StudentDashboard = () => {
-    // Mock Data for Student Classes
-    const enrolledClasses = [
-        { id: 1, title: 'Introduction to AI', section: 'CS101', teacher: 'Prof. Alan Turing', theme: 'bg-gradient-to-r from-blue-600 to-indigo-600' },
-        { id: 2, title: 'Web Development', section: 'CS305', teacher: 'Prof. Tim Berners-Lee', theme: 'bg-gradient-to-r from-orange-500 to-pink-600' },
-        { id: 3, title: 'Database Systems', section: 'CS204', teacher: 'Prof. Ada Lovelace', theme: 'bg-gradient-to-r from-emerald-600 to-teal-600' },
-        { id: 4, title: 'Algorithms', section: 'CS301', teacher: 'Prof. Donald Knuth', theme: 'bg-slate-700' },
-        { id: 5, title: 'Computer Networks', section: 'CS401', teacher: 'Prof. Grace Hopper', theme: 'bg-purple-600' },
-    ];
+    const [classes, setClasses] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('http://localhost:5000/api/classes', {
+                    headers: { 'x-auth-token': token }
+                });
+                const data = await res.json();
+                setClasses(data);
+            } catch (err) {
+                console.error("Error fetching classes:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchClasses();
+    }, []);
+
+    if (loading) return <div className="p-6 text-center text-secondary-foreground">Loading classes...</div>;
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-semibold text-foreground">Enrolled</h1>
-                    <p className="text-sm text-secondary-foreground">Your academic courses for this semester.</p>
+                    <h1 className="text-2xl font-semibold text-foreground">My Classes</h1>
+                    <p className="text-sm text-secondary-foreground">Access your enrolled courses.</p>
+                </div>
+                <div className="flex space-x-3">
+                    <Link to="/join-class" className="flex items-center space-x-2 bg-transparent text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 px-4 py-2 rounded-lg transition-all font-medium">
+                        <Plus className="w-5 h-5" />
+                        <span>Join Class</span>
+                    </Link>
                 </div>
             </div>
 
             {/* Grid of Class Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {enrolledClasses.map((cls) => (
-                    <StudentClassCard
-                        key={cls.id}
-                        title={cls.title}
-                        section={cls.section}
-                        teacher={cls.teacher}
-                        theme={cls.theme}
-                        link={`/class-details`}
-                    />
-                ))}
+                {classes.length === 0 ? (
+                    <div className="col-span-full text-center py-12 bg-surface rounded-xl border border-border">
+                        <p className="text-secondary-foreground">You haven't joined any classes yet.</p>
+                    </div>
+                ) : (
+                    classes.map((cls) => (
+                        <StudentClassCard
+                            key={cls._id}
+                            title={cls.title}
+                            section={cls.section}
+                            students={cls.students?.length || 0}
+                            theme={cls.theme}
+                            link={`/class-details`}
+                        />
+                    ))
+                )}
             </div>
         </div>
     );

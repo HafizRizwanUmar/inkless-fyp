@@ -68,4 +68,33 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
+// @route   POST api/classes/join
+// @desc    Join a class by code
+// @access  Private
+router.post('/join', auth, async (req, res) => {
+    const { code } = req.body;
+
+    try {
+        const classToJoin = await Class.findOne({ code });
+
+        if (!classToJoin) {
+            return res.status(404).json({ msg: 'Class not found' });
+        }
+
+        // Check if user is already a member (student or teacher)
+        if (classToJoin.students.includes(req.user.id) || classToJoin.teachers.includes(req.user.id)) {
+            return res.status(400).json({ msg: 'You are already a member of this class' });
+        }
+
+        // Add user to students array
+        classToJoin.students.push(req.user.id);
+        await classToJoin.save();
+
+        res.json(classToJoin);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;
